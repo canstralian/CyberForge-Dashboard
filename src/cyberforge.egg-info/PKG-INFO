@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: cyberforge
+Version: 0.1.0
+Summary: CyberForge Dark Web OSINT Platform
+Requires-Python: >=3.9
+Requires-Dist: streamlit
+Requires-Dist: streamlit-extras
+Requires-Dist: pandas
+Requires-Dist: plotly
+Requires-Dist: trafilatura
+Requires-Dist: httpx
+Requires-Dist: pysocks
+Requires-Dist: beautifulsoup4
+Requires-Dist: fastapi
+Requires-Dist: sqlalchemy
+Requires-Dist: alembic
+Requires-Dist: asyncpg
+Requires-Dist: celery
+Requires-Dist: redis
+Requires-Dist: python-jose[cryptography]
+Requires-Dist: passlib[bcrypt]
+Requires-Dist: bcrypt>=4.3.0
+Requires-Dist: email-validator>=2.2.0

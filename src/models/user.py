@@ -1,3 +1,6 @@
+"""
+User model for authentication and authorization.
+"""
 from sqlalchemy import Column, String, Boolean, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime

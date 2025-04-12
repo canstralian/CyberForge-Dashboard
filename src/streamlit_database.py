@@ -808,11 +808,12 @@ def init_db_connection():
     from sqlalchemy.future import select
     
     try:
-        # Try to query the User table
-        result = run_async(session.execute(select(User).limit(1)))
-        users = result.scalars().all()
+        # Try to query if tables exist
+        query = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')"
+        result = run_async(session.execute(query))
+        exists = result.scalar()
         
-        return True
+        return exists
     except Exception as e:
         # Tables might not exist yet
         print(f"Error checking database: {e}")

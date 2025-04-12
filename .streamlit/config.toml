@@ -4,11 +4,11 @@ address = "0.0.0.0"
 port = 5000
 
 [theme]
+# Base colors
 primaryColor = "#E74C3C"
 backgroundColor = "#1A1A1A"
 secondaryBackgroundColor = "#2C3E50"
 textColor = "#ECF0F1"
-font = "sans serif"
 
-[global]
-developmentMode = false
+# Other theme settings
+font = "JetBrains Mono"

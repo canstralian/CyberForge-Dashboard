@@ -4,7 +4,27 @@ from streamlit_extras.colored_header import colored_header
 from streamlit_extras.switch_page_button import switch_page
 import streamlit.components.v1 as components
 import time
+import os
 from datetime import datetime
+
+# Import database components
+from src.database_init import ensure_database_initialized
+from src.streamlit_database import (
+    get_dark_web_contents, add_dark_web_content, 
+    get_dark_web_mentions, add_dark_web_mention,
+    get_alerts_df, add_alert, update_alert, get_alert_severity_counts,
+    get_threats_df, add_threat, add_indicator, get_threat_stats,
+    get_reports_df, add_report, get_time_range_dates
+)
+from src.models.dark_web_content import ContentType
+from src.models.threat import ThreatSeverity, ThreatStatus, ThreatCategory
+from src.models.alert import AlertStatus, AlertCategory
+from src.models.report import ReportType, ReportStatus
+from src.models.indicator import IndicatorType
+
+# Initialize database
+if 'db_initialized' not in st.session_state:
+    st.session_state.db_initialized = ensure_database_initialized()
 
 from components.dashboard import render_dashboard
 from components.threats import render_threats

@@ -23,6 +23,7 @@ class AlertCategory(enum.Enum):
     THREAT_DETECTION = "Threat Detection"
     DATA_BREACH = "Data Breach"
     CREDENTIAL_LEAK = "Credential Leak"
+    DARK_WEB_MENTION = "Dark Web Mention"
     BRAND_MENTION = "Brand Mention"
     INFRASTRUCTURE_MENTION = "Infrastructure Mention"
     EMPLOYEE_MENTION = "Employee Mention"
