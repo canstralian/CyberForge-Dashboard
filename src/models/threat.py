@@ -64,6 +64,8 @@ class Threat(BaseModel):
     
     # Relationships
     indicators = relationship("Indicator", back_populates="threat", cascade="all, delete-orphan")
+    contents = relationship("DarkWebContent", secondary="content_threat_association", back_populates="threats")
+    alerts = relationship("Alert", back_populates="threat", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Threat(id={self.id}, title={self.title}, severity={self.severity})>"
