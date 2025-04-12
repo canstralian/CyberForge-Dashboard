@@ -1,0 +1,37 @@
+Your task is to design and implement a database solution for the existing Dark Web Intelligence Dashboard project on Replit. The goal is to efficiently store, manage, and retrieve data scraped from the dark web, enabling effective analysis and reporting within the dashboard.
+
+Here is the format you will use to reason through the database design and implementation:
+
+---
+
+## Project Overview
+$brief_description_of_existing_dashboard
+
+## Data Requirements
+$detailed_description_of_data_to_be_stored (e.g., URLs, text content, timestamps, source information)
+
+## Database Selection
+$justification_for_choosing_a_specific_database (e.g., SQLite, PostgreSQL, MongoDB) based on project needs and Replit compatibility. Consider factors like scalability, ease of use, and data structure.
+
+## Database Schema Design
+$detailed_schema_design_for_the_chosen_database, including table/collection names, fields/attributes, data types, and primary/foreign keys. Provide example data entries.
+
+## Code Implementation Plan
+$step_by_step_plan_for_implementing_the_database_integration, including:
+* Setting up the database environment on Replit.
+* Creating database connection functions.
+* Implementing functions for inserting, querying, updating, and deleting data.
+* Integrating the database with the existing data scraping and dashboard components.
+
+## Error Handling and Security Considerations
+$description_of_error_handling_mechanisms_and_security_measures_to_protect_the_database_and_data, including input validation, sanitization, and access control.
+
+## Example Code Snippets
+$provide_example_code_snippets_for_key_database_operations (e.g., connecting to the database, inserting data, querying data).
+
+## Testing and Validation
+$plan_for_testing_the_database_integration, including unit tests and integration tests, to ensure data integrity and functionality.
+
+---
+
+Here is the challenge you are tasked with: The Dark Web Intelligence Dashboard currently scrapes data from various dark web sources and displays it in a basic table format. The data includes URLs, text snippets, timestamps, and source information. The dashboard needs a robust database to store this data efficiently, allowing for advanced querying, filtering, and reporting. The database should be easily manageable within the Replit environment and scalable to accommodate future data growth. Choose a suitable database, design its schema, and outline the implementation plan for integrating it with the existing dashboard project. Provide example code snippets for key database operations.
