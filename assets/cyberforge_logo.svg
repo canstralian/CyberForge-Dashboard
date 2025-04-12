@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    <linearGradient id="hexGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2C3E50" />
+      <stop offset="100%" stop-color="#1A1A1A" />
+    </linearGradient>
+    <linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E74C3C" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#3498DB" stop-opacity="0.7" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Hexagon -->
+  <polygon points="150,30 247.5,75 247.5,165 150,210 52.5,165 52.5,75" fill="url(#hexGradient)" stroke="#ECF0F1" stroke-width="2" />
+
+  <!-- Circuit Lines -->
+  <g stroke="#3498DB" stroke-width="2" fill="none">
+    <!-- Outer Circuit Lines -->
+    <line x1="150" y1="30" x2="150" y2="10" filter="url(#glow)" />
+    <line x1="247.5" y1="75" x2="267.5" y2="75" filter="url(#glow)" />
+    <line x1="247.5" y1="165" x2="267.5" y2="165" filter="url(#glow)" />
+    <line x1="150" y1="210" x2="150" y2="230" filter="url(#glow)" />
+    <line x1="52.5" y1="165" x2="32.5" y2="165" filter="url(#glow)" />
+    <line x1="52.5" y1="75" x2="32.5" y2="75" filter="url(#glow)" />
+    
+    <!-- Interior Circuit Lines -->
+    <line x1="150" y1="60" x2="150" y2="180" filter="url(#glow)" />
+    <line x1="100" y1="90" x2="200" y2="90" filter="url(#glow)" />
+    <line x1="100" y1="150" x2="200" y2="150" filter="url(#glow)" />
+    <line x1="80" y1="120" x2="220" y2="120" filter="url(#glow)" />
+    
+    <!-- Diagonal Circuit Lines -->
+    <line x1="90" y1="60" x2="120" y2="90" filter="url(#glow)" />
+    <line x1="210" y1="60" x2="180" y2="90" filter="url(#glow)" />
+    <line x1="90" y1="180" x2="120" y2="150" filter="url(#glow)" />
+    <line x1="210" y1="180" x2="180" y2="150" filter="url(#glow)" />
+  </g>
+
+  <!-- Node Points -->
+  <g fill="#E74C3C">
+    <circle cx="150" cy="10" r="4" filter="url(#glow)" />
+    <circle cx="267.5" cy="75" r="4" filter="url(#glow)" />
+    <circle cx="267.5" cy="165" r="4" filter="url(#glow)" />
+    <circle cx="150" cy="230" r="4" filter="url(#glow)" />
+    <circle cx="32.5" cy="165" r="4" filter="url(#glow)" />
+    <circle cx="32.5" cy="75" r="4" filter="url(#glow)" />
+    
+    <circle cx="150" cy="60" r="3" filter="url(#glow)" />
+    <circle cx="150" cy="120" r="3" filter="url(#glow)" />
+    <circle cx="150" cy="180" r="3" filter="url(#glow)" />
+    <circle cx="100" cy="90" r="3" filter="url(#glow)" />
+    <circle cx="200" cy="90" r="3" filter="url(#glow)" />
+    <circle cx="100" cy="150" r="3" filter="url(#glow)" />
+    <circle cx="200" cy="150" r="3" filter="url(#glow)" />
+  </g>
+
+  <!-- Center Emblem -->
+  <g transform="translate(150, 120)">
+    <circle cx="0" cy="0" r="25" fill="#2C3E50" stroke="#ECF0F1" stroke-width="2" />
+    <path d="M-10,-10 L10,10 M-10,10 L10,-10" stroke="#E74C3C" stroke-width="4" filter="url(#glow)" />
+  </g>
+
+  <!-- Text elements positioning at the bottom of the image -->
+  <g transform="translate(150, 260)" text-anchor="middle">
+    <text font-family="'JetBrains Mono', monospace" font-size="24" fill="#ECF0F1" font-weight="bold">CYBERFORGE</text>
+    <text y="20" font-family="'Inter', sans-serif" font-size="12" fill="#3498DB">BY CHEMICALLY MOTIVATED SOLUTIONS</text>
+  </g>
+</svg>
