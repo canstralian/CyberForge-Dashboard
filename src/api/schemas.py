@@ -96,7 +96,7 @@ class ThreatBase(BaseSchema):
     confidence_score: float = 0.0
     risk_score: float = 0.0
     raw_content: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    meta_data: Optional[Dict[str, Any]] = None
 
 class ThreatCreate(ThreatBase):
     """Schema for threat creation."""
@@ -117,7 +117,7 @@ class ThreatUpdate(BaseSchema):
     confidence_score: Optional[float] = None
     risk_score: Optional[float] = None
     raw_content: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    meta_data: Optional[Dict[str, Any]] = None
 
 class Threat(ThreatBase):
     """Schema for threat response."""

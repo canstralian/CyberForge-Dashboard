@@ -60,7 +60,7 @@ class Threat(BaseModel):
     confidence_score = Column(Float, default=0.0)
     risk_score = Column(Float, default=0.0)
     raw_content = Column(Text)
-    metadata = Column(JSON)
+    meta_data = Column(JSON)  # Changed from 'metadata' to 'meta_data' as metadata is reserved in SQLAlchemy
     
     # Relationships
     indicators = relationship("Indicator", back_populates="threat", cascade="all, delete-orphan")
