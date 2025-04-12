@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 # Get database URL from environment (convert synchronous to async URL)
 db_url = os.getenv("DATABASE_URL", "")
 if db_url.startswith("postgresql://"):
+    # Remove sslmode parameter if present which causes issues with asyncpg
+    if "?" in db_url:
+        base_url, params = db_url.split("?", 1)
+        param_list = params.split("&")
+        filtered_params = [p for p in param_list if not p.startswith("sslmode=")]
+        if filtered_params:
+            db_url = f"{base_url}?{'&'.join(filtered_params)}"
+        else:
+            db_url = base_url
+    
     ASYNC_DATABASE_URL = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 else:
     ASYNC_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
