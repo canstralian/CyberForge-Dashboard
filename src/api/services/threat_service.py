@@ -1,20 +1,15 @@
 """
-Service for working with threat data.
+Service for threat operations.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update, delete, func, desc, and_, or_
+from sqlalchemy import func, or_, and_
+from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Union
-import logging
-from datetime import datetime
 
 from src.models.threat import Threat, ThreatSeverity, ThreatStatus, ThreatCategory
 from src.models.indicator import Indicator, IndicatorType
 from src.api.schemas import PaginationParams
-
-# Configure logger
-logger = logging.getLogger(__name__)
-
 
 async def create_threat(
     db: AsyncSession,
@@ -30,8 +25,6 @@ async def create_threat(
     affected_entity_type: Optional[str] = None,
     confidence_score: float = 0.0,
     risk_score: float = 0.0,
-    raw_content: Optional[str] = None,
-    meta_data: Optional[Dict[str, Any]] = None,
 ) -> Threat:
     """
     Create a new threat.
@@ -50,35 +43,31 @@ async def create_threat(
         affected_entity_type: Type of affected entity
         confidence_score: Confidence score (0-1)
         risk_score: Risk score (0-1)
-        raw_content: Raw content of the threat
-        meta_data: Additional metadata
         
     Returns:
         Threat: Created threat
     """
-    threat = Threat(
+    db_threat = Threat(
         title=title,
         description=description,
         severity=severity,
-        status=status,
         category=category,
+        status=status,
         source_url=source_url,
         source_name=source_name,
         source_type=source_type,
+        discovered_at=datetime.utcnow(),
         affected_entity=affected_entity,
         affected_entity_type=affected_entity_type,
         confidence_score=confidence_score,
         risk_score=risk_score,
-        raw_content=raw_content,
-        meta_data=meta_data or {},
     )
     
-    db.add(threat)
+    db.add(db_threat)
     await db.commit()
-    await db.refresh(threat)
+    await db.refresh(db_threat)
     
-    return threat
-
+    return db_threat
 
 async def get_threat_by_id(db: AsyncSession, threat_id: int) -> Optional[Threat]:
     """
@@ -89,13 +78,10 @@ async def get_threat_by_id(db: AsyncSession, threat_id: int) -> Optional[Threat]
         threat_id: Threat ID
         
     Returns:
-        Optional[Threat]: Found threat or None
+        Optional[Threat]: Threat or None if not found
     """
-    result = await db.execute(
-        select(Threat).where(Threat.id == threat_id)
-    )
+    result = await db.execute(select(Threat).filter(Threat.id == threat_id))
     return result.scalars().first()
-
 
 async def get_threats(
     db: AsyncSession,
@@ -108,7 +94,7 @@ async def get_threats(
     to_date: Optional[datetime] = None,
 ) -> List[Threat]:
     """
-    Get threats with filtering.
+    Get threats with filtering and pagination.
     
     Args:
         db: Database session
@@ -127,35 +113,33 @@ async def get_threats(
     
     # Apply filters
     if severity:
-        query = query.where(Threat.severity.in_(severity))
+        query = query.filter(Threat.severity.in_(severity))
     
     if status:
-        query = query.where(Threat.status.in_(status))
+        query = query.filter(Threat.status.in_(status))
     
     if category:
-        query = query.where(Threat.category.in_(category))
+        query = query.filter(Threat.category.in_(category))
     
     if search_query:
         search_filter = or_(
             Threat.title.ilike(f"%{search_query}%"),
-            Threat.description.ilike(f"%{search_query}%"),
-            Threat.affected_entity.ilike(f"%{search_query}%"),
+            Threat.description.ilike(f"%{search_query}%")
         )
-        query = query.where(search_filter)
+        query = query.filter(search_filter)
     
     if from_date:
-        query = query.where(Threat.discovered_at >= from_date)
+        query = query.filter(Threat.discovered_at >= from_date)
     
     if to_date:
-        query = query.where(Threat.discovered_at <= to_date)
+        query = query.filter(Threat.discovered_at <= to_date)
     
     # Apply pagination
-    query = query.order_by(desc(Threat.discovered_at))
+    query = query.order_by(Threat.discovered_at.desc())
     query = query.offset((pagination.page - 1) * pagination.size).limit(pagination.size)
     
     result = await db.execute(query)
     return result.scalars().all()
-
 
 async def count_threats(
     db: AsyncSession,
@@ -169,40 +153,45 @@ async def count_threats(
     """
     Count threats with filtering.
     
-    Args are the same as get_threats, except pagination.
-    
+    Args:
+        db: Database session
+        severity: Filter by severity
+        status: Filter by status
+        category: Filter by category
+        search_query: Search in title and description
+        from_date: Filter by discovered_at >= from_date
+        to_date: Filter by discovered_at <= to_date
+        
     Returns:
-        int: Count of matching threats
+        int: Count of threats
     """
     query = select(func.count(Threat.id))
     
-    # Apply filters
+    # Apply filters (same as in get_threats)
     if severity:
-        query = query.where(Threat.severity.in_(severity))
+        query = query.filter(Threat.severity.in_(severity))
     
     if status:
-        query = query.where(Threat.status.in_(status))
+        query = query.filter(Threat.status.in_(status))
     
     if category:
-        query = query.where(Threat.category.in_(category))
+        query = query.filter(Threat.category.in_(category))
     
     if search_query:
         search_filter = or_(
             Threat.title.ilike(f"%{search_query}%"),
-            Threat.description.ilike(f"%{search_query}%"),
-            Threat.affected_entity.ilike(f"%{search_query}%"),
+            Threat.description.ilike(f"%{search_query}%")
         )
-        query = query.where(search_filter)
+        query = query.filter(search_filter)
     
     if from_date:
-        query = query.where(Threat.discovered_at >= from_date)
+        query = query.filter(Threat.discovered_at >= from_date)
     
     if to_date:
-        query = query.where(Threat.discovered_at <= to_date)
+        query = query.filter(Threat.discovered_at <= to_date)
     
     result = await db.execute(query)
     return result.scalar()
-
 
 async def update_threat(
     db: AsyncSession,
@@ -216,25 +205,30 @@ async def update_threat(
     affected_entity_type: Optional[str] = None,
     confidence_score: Optional[float] = None,
     risk_score: Optional[float] = None,
-    meta_data: Optional[Dict[str, Any]] = None,
 ) -> Optional[Threat]:
     """
-    Update a threat.
+    Update threat.
     
     Args:
         db: Database session
         threat_id: Threat ID
-        Other args: Fields to update
+        title: New title
+        description: New description
+        severity: New severity
+        status: New status
+        category: New category
+        affected_entity: New affected entity
+        affected_entity_type: New affected entity type
+        confidence_score: New confidence score
+        risk_score: New risk score
         
     Returns:
-        Optional[Threat]: Updated threat or None
+        Optional[Threat]: Updated threat or None if not found
     """
     threat = await get_threat_by_id(db, threat_id)
-    
     if not threat:
         return None
     
-    # Update fields if provided
     if title is not None:
         threat.title = title
     
@@ -262,14 +256,12 @@ async def update_threat(
     if risk_score is not None:
         threat.risk_score = risk_score
     
-    if meta_data is not None:
-        threat.meta_data = meta_data
+    threat.updated_at = datetime.utcnow()
     
     await db.commit()
     await db.refresh(threat)
     
     return threat
-
 
 async def add_indicator_to_threat(
     db: AsyncSession,
@@ -280,7 +272,8 @@ async def add_indicator_to_threat(
     is_verified: bool = False,
     context: Optional[str] = None,
     source: Optional[str] = None,
-) -> Optional[Indicator]:
+    confidence_score: float = 0.0,
+) -> Indicator:
     """
     Add an indicator to a threat.
     
@@ -289,37 +282,39 @@ async def add_indicator_to_threat(
         threat_id: Threat ID
         value: Indicator value
         indicator_type: Indicator type
-        description: Indicator description
+        description: Description of the indicator
         is_verified: Whether the indicator is verified
         context: Context of the indicator
         source: Source of the indicator
+        confidence_score: Confidence score (0-1)
         
     Returns:
-        Optional[Indicator]: Created indicator or None
+        Indicator: Created indicator
     """
-    # Ensure threat exists
+    # Check if threat exists
     threat = await get_threat_by_id(db, threat_id)
-    
     if not threat:
-        return None
+        raise ValueError(f"Threat with ID {threat_id} not found")
     
     # Create indicator
-    indicator = Indicator(
-        value=value,
-        type=indicator_type,
-        description=description,
+    db_indicator = Indicator(
         threat_id=threat_id,
+        value=value,
+        indicator_type=indicator_type,
+        description=description,
         is_verified=is_verified,
         context=context,
         source=source,
+        confidence_score=confidence_score,
+        first_seen=datetime.utcnow(),
+        last_seen=datetime.utcnow(),
     )
     
-    db.add(indicator)
+    db.add(db_indicator)
     await db.commit()
-    await db.refresh(indicator)
+    await db.refresh(db_indicator)
     
-    return indicator
-
+    return db_indicator
 
 async def get_threat_statistics(
     db: AsyncSession,
@@ -337,63 +332,80 @@ async def get_threat_statistics(
     Returns:
         Dict[str, Any]: Threat statistics
     """
-    # Base query filters
-    where_clauses = []
-    if from_date:
-        where_clauses.append(Threat.discovered_at >= from_date)
-    if to_date:
-        where_clauses.append(Threat.discovered_at <= to_date)
+    # Set default time range if not provided
+    if not to_date:
+        to_date = datetime.utcnow()
     
-    # Get total count
-    total_query = select(func.count(Threat.id))
-    if where_clauses:
-        total_query = total_query.where(and_(*where_clauses))
-    total_result = await db.execute(total_query)
-    total_threats = total_result.scalar()
+    if not from_date:
+        from_date = to_date - timedelta(days=30)
     
     # Get count by severity
-    severity_query = select(Threat.severity, func.count(Threat.id).label('count'))
-    if where_clauses:
-        severity_query = severity_query.where(and_(*where_clauses))
-    severity_query = severity_query.group_by(Threat.severity)
-    severity_result = await db.execute(severity_query)
-    severity_counts = {severity.value: count for severity, count in severity_result.all()}
-    
-    # Ensure all severities are represented
+    severity_counts = {}
     for severity in ThreatSeverity:
-        if severity.value not in severity_counts:
-            severity_counts[severity.value] = 0
-    
-    # Get count by category
-    category_query = select(Threat.category, func.count(Threat.id).label('count'))
-    if where_clauses:
-        category_query = category_query.where(and_(*where_clauses))
-    category_query = category_query.group_by(Threat.category)
-    category_result = await db.execute(category_query)
-    category_counts = {category.value: count for category, count in category_result.all()}
-    
-    # Ensure all categories are represented
-    for category in ThreatCategory:
-        if category.value not in category_counts:
-            category_counts[category.value] = 0
+        query = select(func.count(Threat.id)).filter(and_(
+            Threat.severity == severity,
+            Threat.discovered_at >= from_date,
+            Threat.discovered_at <= to_date,
+        ))
+        result = await db.execute(query)
+        severity_counts[severity.value] = result.scalar() or 0
     
     # Get count by status
-    status_query = select(Threat.status, func.count(Threat.id).label('count'))
-    if where_clauses:
-        status_query = status_query.where(and_(*where_clauses))
-    status_query = status_query.group_by(Threat.status)
-    status_result = await db.execute(status_query)
-    status_counts = {status.value: count for status, count in status_result.all()}
-    
-    # Ensure all statuses are represented
+    status_counts = {}
     for status in ThreatStatus:
-        if status.value not in status_counts:
-            status_counts[status.value] = 0
+        query = select(func.count(Threat.id)).filter(and_(
+            Threat.status == status,
+            Threat.discovered_at >= from_date,
+            Threat.discovered_at <= to_date,
+        ))
+        result = await db.execute(query)
+        status_counts[status.value] = result.scalar() or 0
     
-    # Compile statistics
+    # Get count by category
+    category_counts = {}
+    for category in ThreatCategory:
+        query = select(func.count(Threat.id)).filter(and_(
+            Threat.category == category,
+            Threat.discovered_at >= from_date,
+            Threat.discovered_at <= to_date,
+        ))
+        result = await db.execute(query)
+        category_counts[category.value] = result.scalar() or 0
+    
+    # Get total count
+    query = select(func.count(Threat.id)).filter(and_(
+        Threat.discovered_at >= from_date,
+        Threat.discovered_at <= to_date,
+    ))
+    result = await db.execute(query)
+    total_count = result.scalar() or 0
+    
+    # Get count by day
+    time_series = []
+    current_date = from_date.date()
+    end_date = to_date.date()
+    
+    while current_date <= end_date:
+        next_date = current_date + timedelta(days=1)
+        query = select(func.count(Threat.id)).filter(and_(
+            Threat.discovered_at >= datetime.combine(current_date, datetime.min.time()),
+            Threat.discovered_at < datetime.combine(next_date, datetime.min.time()),
+        ))
+        result = await db.execute(query)
+        count = result.scalar() or 0
+        time_series.append({
+            "date": current_date.isoformat(),
+            "count": count
+        })
+        current_date = next_date
+    
+    # Return statistics
     return {
-        "total_threats": total_threats,
-        "by_severity": severity_counts,
-        "by_category": category_counts,
-        "by_status": status_counts,
+        "total_count": total_count,
+        "severity_counts": severity_counts,
+        "status_counts": status_counts,
+        "category_counts": category_counts,
+        "time_series": time_series,
+        "from_date": from_date.isoformat(),
+        "to_date": to_date.isoformat(),
     }

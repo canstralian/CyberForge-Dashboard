@@ -818,8 +818,9 @@ def init_db_connection():
     from sqlalchemy.future import select
     
     try:
-        # Try to query if tables exist
-        query = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')"
+        # Try to query if tables exist using SQLAlchemy text()
+        from sqlalchemy import text
+        query = text("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')")
         result = run_async(session.execute(query))
         exists = result.scalar()
         

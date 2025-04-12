@@ -59,7 +59,8 @@ async def check_db_initialized():
             # Replace with actual table names once you've defined them
             try:
                 # Check if the 'users' table exists
-                query = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')"
+                from sqlalchemy import text
+                query = text("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')")
                 result = await session.execute(query)
                 exists = result.scalar()
                 

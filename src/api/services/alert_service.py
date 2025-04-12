@@ -1,20 +1,15 @@
 """
-Service for working with alerts.
+Service for alert operations.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update, delete, func, desc, and_, or_
-from typing import List, Optional, Dict, Any, Union
-import logging
+from sqlalchemy import func, or_, and_
 from datetime import datetime
+from typing import List, Optional, Dict, Any, Union
 
 from src.models.alert import Alert, AlertStatus, AlertCategory
 from src.models.threat import ThreatSeverity
 from src.api.schemas import PaginationParams
-
-# Configure logger
-logger = logging.getLogger(__name__)
-
 
 async def create_alert(
     db: AsyncSession,
@@ -25,7 +20,6 @@ async def create_alert(
     source_url: Optional[str] = None,
     threat_id: Optional[int] = None,
     mention_id: Optional[int] = None,
-    assigned_to_id: Optional[int] = None,
 ) -> Alert:
     """
     Create a new alert.
@@ -39,28 +33,28 @@ async def create_alert(
         source_url: Source URL for the alert
         threat_id: ID of related threat
         mention_id: ID of related dark web mention
-        assigned_to_id: ID of user assigned to the alert
         
     Returns:
         Alert: Created alert
     """
-    alert = Alert(
+    db_alert = Alert(
         title=title,
         description=description,
         severity=severity,
+        status=AlertStatus.NEW,
         category=category,
+        generated_at=datetime.utcnow(),
         source_url=source_url,
+        is_read=False,
         threat_id=threat_id,
         mention_id=mention_id,
-        assigned_to_id=assigned_to_id,
     )
     
-    db.add(alert)
+    db.add(db_alert)
     await db.commit()
-    await db.refresh(alert)
+    await db.refresh(db_alert)
     
-    return alert
-
+    return db_alert
 
 async def get_alert_by_id(db: AsyncSession, alert_id: int) -> Optional[Alert]:
     """
@@ -71,13 +65,10 @@ async def get_alert_by_id(db: AsyncSession, alert_id: int) -> Optional[Alert]:
         alert_id: Alert ID
         
     Returns:
-        Optional[Alert]: Found alert or None
+        Optional[Alert]: Alert or None if not found
     """
-    result = await db.execute(
-        select(Alert).where(Alert.id == alert_id)
-    )
+    result = await db.execute(select(Alert).filter(Alert.id == alert_id))
     return result.scalars().first()
-
 
 async def get_alerts(
     db: AsyncSession,
@@ -86,14 +77,12 @@ async def get_alerts(
     status: Optional[List[AlertStatus]] = None,
     category: Optional[List[AlertCategory]] = None,
     is_read: Optional[bool] = None,
-    threat_id: Optional[int] = None,
-    assigned_to_id: Optional[int] = None,
     search_query: Optional[str] = None,
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
 ) -> List[Alert]:
     """
-    Get alerts with filtering.
+    Get alerts with filtering and pagination.
     
     Args:
         db: Database session
@@ -102,8 +91,6 @@ async def get_alerts(
         status: Filter by status
         category: Filter by category
         is_read: Filter by read status
-        threat_id: Filter by threat ID
-        assigned_to_id: Filter by assigned user ID
         search_query: Search in title and description
         from_date: Filter by generated_at >= from_date
         to_date: Filter by generated_at <= to_date
@@ -115,43 +102,36 @@ async def get_alerts(
     
     # Apply filters
     if severity:
-        query = query.where(Alert.severity.in_(severity))
+        query = query.filter(Alert.severity.in_(severity))
     
     if status:
-        query = query.where(Alert.status.in_(status))
+        query = query.filter(Alert.status.in_(status))
     
     if category:
-        query = query.where(Alert.category.in_(category))
+        query = query.filter(Alert.category.in_(category))
     
     if is_read is not None:
-        query = query.where(Alert.is_read == is_read)
-    
-    if threat_id:
-        query = query.where(Alert.threat_id == threat_id)
-    
-    if assigned_to_id:
-        query = query.where(Alert.assigned_to_id == assigned_to_id)
+        query = query.filter(Alert.is_read == is_read)
     
     if search_query:
         search_filter = or_(
             Alert.title.ilike(f"%{search_query}%"),
-            Alert.description.ilike(f"%{search_query}%"),
+            Alert.description.ilike(f"%{search_query}%")
         )
-        query = query.where(search_filter)
+        query = query.filter(search_filter)
     
     if from_date:
-        query = query.where(Alert.generated_at >= from_date)
+        query = query.filter(Alert.generated_at >= from_date)
     
     if to_date:
-        query = query.where(Alert.generated_at <= to_date)
+        query = query.filter(Alert.generated_at <= to_date)
     
     # Apply pagination
-    query = query.order_by(desc(Alert.generated_at))
+    query = query.order_by(Alert.generated_at.desc())
     query = query.offset((pagination.page - 1) * pagination.size).limit(pagination.size)
     
     result = await db.execute(query)
     return result.scalars().all()
-
 
 async def count_alerts(
     db: AsyncSession,
@@ -159,8 +139,6 @@ async def count_alerts(
     status: Optional[List[AlertStatus]] = None,
     category: Optional[List[AlertCategory]] = None,
     is_read: Optional[bool] = None,
-    threat_id: Optional[int] = None,
-    assigned_to_id: Optional[int] = None,
     search_query: Optional[str] = None,
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
@@ -168,48 +146,49 @@ async def count_alerts(
     """
     Count alerts with filtering.
     
-    Args are the same as get_alerts, except pagination.
-    
+    Args:
+        db: Database session
+        severity: Filter by severity
+        status: Filter by status
+        category: Filter by category
+        is_read: Filter by read status
+        search_query: Search in title and description
+        from_date: Filter by generated_at >= from_date
+        to_date: Filter by generated_at <= to_date
+        
     Returns:
-        int: Count of matching alerts
+        int: Count of alerts
     """
     query = select(func.count(Alert.id))
     
-    # Apply filters
+    # Apply filters (same as in get_alerts)
     if severity:
-        query = query.where(Alert.severity.in_(severity))
+        query = query.filter(Alert.severity.in_(severity))
     
     if status:
-        query = query.where(Alert.status.in_(status))
+        query = query.filter(Alert.status.in_(status))
     
     if category:
-        query = query.where(Alert.category.in_(category))
+        query = query.filter(Alert.category.in_(category))
     
     if is_read is not None:
-        query = query.where(Alert.is_read == is_read)
-    
-    if threat_id:
-        query = query.where(Alert.threat_id == threat_id)
-    
-    if assigned_to_id:
-        query = query.where(Alert.assigned_to_id == assigned_to_id)
+        query = query.filter(Alert.is_read == is_read)
     
     if search_query:
         search_filter = or_(
             Alert.title.ilike(f"%{search_query}%"),
-            Alert.description.ilike(f"%{search_query}%"),
+            Alert.description.ilike(f"%{search_query}%")
         )
-        query = query.where(search_filter)
+        query = query.filter(search_filter)
     
     if from_date:
-        query = query.where(Alert.generated_at >= from_date)
+        query = query.filter(Alert.generated_at >= from_date)
     
     if to_date:
-        query = query.where(Alert.generated_at <= to_date)
+        query = query.filter(Alert.generated_at <= to_date)
     
     result = await db.execute(query)
     return result.scalar()
-
 
 async def update_alert_status(
     db: AsyncSession,
@@ -227,14 +206,12 @@ async def update_alert_status(
         action_taken: Description of action taken
         
     Returns:
-        Optional[Alert]: Updated alert or None
+        Optional[Alert]: Updated alert or None if not found
     """
     alert = await get_alert_by_id(db, alert_id)
-    
     if not alert:
         return None
     
-    # Update fields
     alert.status = status
     
     if action_taken:
@@ -243,13 +220,17 @@ async def update_alert_status(
     if status == AlertStatus.RESOLVED:
         alert.resolved_at = datetime.utcnow()
     
+    alert.updated_at = datetime.utcnow()
+    
     await db.commit()
     await db.refresh(alert)
     
     return alert
 
-
-async def mark_alert_as_read(db: AsyncSession, alert_id: int) -> Optional[Alert]:
+async def mark_alert_as_read(
+    db: AsyncSession,
+    alert_id: int,
+) -> Optional[Alert]:
     """
     Mark alert as read.
     
@@ -258,24 +239,24 @@ async def mark_alert_as_read(db: AsyncSession, alert_id: int) -> Optional[Alert]
         alert_id: Alert ID
         
     Returns:
-        Optional[Alert]: Updated alert or None
+        Optional[Alert]: Updated alert or None if not found
     """
     alert = await get_alert_by_id(db, alert_id)
-    
     if not alert:
         return None
     
     alert.is_read = True
+    alert.updated_at = datetime.utcnow()
+    
     await db.commit()
     await db.refresh(alert)
     
     return alert
 
-
 async def assign_alert(
     db: AsyncSession,
     alert_id: int,
-    user_id: int
+    user_id: int,
 ) -> Optional[Alert]:
     """
     Assign alert to a user.
@@ -283,22 +264,23 @@ async def assign_alert(
     Args:
         db: Database session
         alert_id: Alert ID
-        user_id: ID of user to assign
+        user_id: User ID to assign to
         
     Returns:
-        Optional[Alert]: Updated alert or None
+        Optional[Alert]: Updated alert or None if not found
     """
     alert = await get_alert_by_id(db, alert_id)
-    
     if not alert:
         return None
     
     alert.assigned_to_id = user_id
+    alert.status = AlertStatus.ASSIGNED
+    alert.updated_at = datetime.utcnow()
+    
     await db.commit()
     await db.refresh(alert)
     
     return alert
-
 
 async def get_alert_counts_by_severity(
     db: AsyncSession,
@@ -316,22 +298,19 @@ async def get_alert_counts_by_severity(
     Returns:
         Dict[str, int]: Mapping of severity to count
     """
-    query = select(Alert.severity, func.count(Alert.id).label('count'))
+    result = {}
     
-    if from_date:
-        query = query.where(Alert.generated_at >= from_date)
-    
-    if to_date:
-        query = query.where(Alert.generated_at <= to_date)
-    
-    query = query.group_by(Alert.severity)
-    
-    result = await db.execute(query)
-    counts = {severity.value: count for severity, count in result.all()}
-    
-    # Ensure all severities are represented
     for severity in ThreatSeverity:
-        if severity.value not in counts:
-            counts[severity.value] = 0
+        query = select(func.count(Alert.id)).filter(Alert.severity == severity)
+        
+        if from_date:
+            query = query.filter(Alert.generated_at >= from_date)
+        
+        if to_date:
+            query = query.filter(Alert.generated_at <= to_date)
+        
+        count_result = await db.execute(query)
+        count = count_result.scalar() or 0
+        result[severity.value] = count
     
-    return counts
+    return result
