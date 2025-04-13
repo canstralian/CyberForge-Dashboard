@@ -101,6 +101,25 @@ def get_db_session():
         return None
 
 
+async def get_async_session():
+    """
+    Async context manager for database sessions.
+    
+    Usage:
+        async with get_async_session() as session:
+            # Use session here
+    """
+    session = async_session()
+    try:
+        yield session
+        await session.commit()
+    except Exception as e:
+        await session.rollback()
+        raise e
+    finally:
+        await session.close()
+
+
 # Dark Web Content functions
 def get_dark_web_contents(
     page: int = 1,

@@ -20,5 +20,9 @@ class User(BaseModel):
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     
+    # Relationships
+    searches = relationship("SearchHistory", back_populates="user")
+    saved_searches = relationship("SavedSearch", back_populates="user")
+    
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, email={self.email})>"

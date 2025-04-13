@@ -59,6 +59,7 @@ class DarkWebContent(BaseModel):
     
     # Relationships
     mentions = relationship("DarkWebMention", back_populates="content", cascade="all, delete-orphan")
+    search_results = relationship("SearchResult", back_populates="content")
     
     def __repr__(self):
         return f"<DarkWebContent(id={self.id}, url={self.url}, content_type={self.content_type})>"

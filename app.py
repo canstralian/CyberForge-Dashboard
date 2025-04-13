@@ -33,6 +33,7 @@ from components.alerts import render_alerts
 from components.reports import render_reports
 from components.live_feed import render_live_feed, render_content_analysis
 from components.web_scraper import render_web_scraper_ui
+from components.search_trends import render_search_trends
 
 # Page configuration
 st.set_page_config(
@@ -239,7 +240,7 @@ with st.sidebar:
     st.subheader("Navigation")
     selected_page = st.radio(
         "Select a page",
-        ["Dashboard", "Live Feed", "Threat Detection", "Monitoring", "Alerts", "Reports", "Content Analysis", "Web Scraper"],
+        ["Dashboard", "Live Feed", "Threat Detection", "Monitoring", "Alerts", "Reports", "Content Analysis", "Web Scraper", "Search Trends"],
         label_visibility="collapsed"
     )
     
