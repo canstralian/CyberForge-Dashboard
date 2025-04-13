@@ -13,7 +13,6 @@ import json
 from typing import Dict, List, Any, Optional
 import random
 
-from src.streamlit_database import get_async_session
 from src.api.services.search_history_service import (
     get_search_history,
     get_trending_topics,
@@ -198,7 +197,11 @@ async def get_user_saved_searches(user_id=None):
 async def create_new_saved_search(name, query, user_id=None, frequency=24, category=None):
     """Create a new saved search"""
     try:
-        async with get_async_session() as session:
+        # Create a session without context manager
+        from src.streamlit_database import async_session
+        session = async_session()
+        
+        try:
             saved_search = await create_saved_search(
                 db=session,
                 name=name,
@@ -207,7 +210,13 @@ async def create_new_saved_search(name, query, user_id=None, frequency=24, categ
                 frequency=frequency,
                 category=category
             )
+            await session.commit()
             return saved_search
+        except Exception as e:
+            await session.rollback()
+            raise e
+        finally:
+            await session.close()
     except Exception as e:
         st.error(f"Error creating saved search: {e}")
         return None
