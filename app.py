@@ -353,6 +353,8 @@ elif selected_page == "Content Analysis":
     render_content_analysis()
 elif selected_page == "Web Scraper":
     render_web_scraper_ui()
+elif selected_page == "Search Trends":
+    render_search_trends()
 
 # Add a floating action button for quick actions
 st.markdown("""
