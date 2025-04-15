@@ -1,4 +1,13 @@
 import streamlit as st
+
+# Page configuration - MUST be the first Streamlit command
+st.set_page_config(
+    page_title="CyberForge | Dark Web OSINT Platform",
+    page_icon="🔒",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 from streamlit_extras.app_logo import add_logo
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.switch_page_button import switch_page
@@ -35,14 +44,6 @@ from components.live_feed import render_live_feed, render_content_analysis
 from components.web_scraper import render_web_scraper_ui
 from components.search_trends import render_search_trends
 from components.subscriptions import render_subscriptions
-
-# Page configuration
-st.set_page_config(
-    page_title="CyberForge | Dark Web OSINT Platform",
-    page_icon="🔒",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # Custom CSS to match design requirements and improve UI/UX
 st.markdown("""
