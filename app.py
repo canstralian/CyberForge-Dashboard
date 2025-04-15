@@ -296,7 +296,7 @@ with st.sidebar:
                 if not notification["read"]:
                     if st.button("Mark as read", key=f"read_{i}", help="Mark this notification as read"):
                         st.session_state.notifications[i]["read"] = True
-                        st.experimental_rerun()
+                        st.rerun()
         else:
             st.info("No notifications")
     
