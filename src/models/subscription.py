@@ -13,17 +13,17 @@ from src.models.base import Base
 
 class SubscriptionTier(str, Enum):
     """Subscription tier enum."""
-    FREE = "free"
-    BASIC = "basic"
-    PROFESSIONAL = "professional"
-    ENTERPRISE = "enterprise"
+    FREE = "FREE"
+    BASIC = "BASIC"
+    PROFESSIONAL = "PROFESSIONAL"
+    ENTERPRISE = "ENTERPRISE"
 
 
 class BillingPeriod(str, Enum):
     """Billing period enum."""
-    MONTHLY = "monthly"
-    ANNUALLY = "annually"
-    CUSTOM = "custom"
+    MONTHLY = "MONTHLY"
+    ANNUALLY = "ANNUALLY"
+    CUSTOM = "CUSTOM"
 
 
 class SubscriptionPlan(Base):
@@ -68,12 +68,12 @@ class SubscriptionPlan(Base):
 
 class SubscriptionStatus(str, Enum):
     """Subscription status enum."""
-    ACTIVE = "active"
-    PAST_DUE = "past_due"
-    CANCELED = "canceled"
-    TRIALING = "trialing"
-    INCOMPLETE = "incomplete"
-    INCOMPLETE_EXPIRED = "incomplete_expired"
+    ACTIVE = "ACTIVE"
+    PAST_DUE = "PAST_DUE"
+    CANCELED = "CANCELED"
+    TRIALING = "TRIALING"
+    INCOMPLETE = "INCOMPLETE"
+    INCOMPLETE_EXPIRED = "INCOMPLETE_EXPIRED"
 
 
 class UserSubscription(Base):
@@ -110,10 +110,10 @@ class UserSubscription(Base):
 
 class PaymentStatus(str, Enum):
     """Payment status enum."""
-    SUCCEEDED = "succeeded"
-    PENDING = "pending"
-    FAILED = "failed"
-    REFUNDED = "refunded"
+    SUCCEEDED = "SUCCEEDED"
+    PENDING = "PENDING"
+    FAILED = "FAILED"
+    REFUNDED = "REFUNDED"
 
 
 class PaymentHistory(Base):
