@@ -18,13 +18,9 @@ from datetime import datetime
 
 # Import database components
 from src.database_init import ensure_database_initialized
-from src.streamlit_database import (
-    get_dark_web_contents, add_dark_web_content, 
-    get_dark_web_mentions, add_dark_web_mention,
-    get_alerts_df, add_alert, update_alert, get_alert_severity_counts,
-    get_threats_df, add_threat, add_indicator, get_threat_stats,
-    get_reports_df, add_report, get_time_range_dates
-)
+
+# Import database context manager for async operations
+from src.streamlit_database import get_db_session, run_async
 from src.models.dark_web_content import ContentType
 from src.models.threat import ThreatSeverity, ThreatStatus, ThreatCategory
 from src.models.alert import AlertStatus, AlertCategory
@@ -360,6 +356,8 @@ elif selected_page == "Search Trends":
     render_search_trends()
 elif selected_page == "Subscriptions":
     render_subscriptions()
+elif selected_page == "Deployment Recommendations":
+    render_deployment_recommendations()
 
 # Add a floating action button for quick actions
 st.markdown("""
