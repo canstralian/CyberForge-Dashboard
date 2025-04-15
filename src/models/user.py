@@ -27,7 +27,7 @@ class User(BaseModel):
     searches = relationship("SearchHistory", back_populates="user")
     saved_searches = relationship("SavedSearch", back_populates="user")
     subscriptions = relationship("UserSubscription", back_populates="user")
-    deployment_recommendations = relationship("DeploymentRecommendation", back_populates="user")
+    # Note: DeploymentRecommendation relationship is defined in the deployment.py model to avoid circular imports
     
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, email={self.email})>"

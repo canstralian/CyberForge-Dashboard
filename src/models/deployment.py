@@ -99,7 +99,7 @@ class DeploymentRecommendation(Base):
     expires_at = Column(DateTime(timezone=True))
     
     # Relationships
-    user = relationship("User", back_populates="deployment_recommendations")
+    user = relationship("User")  # No back_populates to avoid circular imports
     security_configurations = relationship("DeploymentSecurityConfig", back_populates="recommendation", cascade="all, delete-orphan")
     
     def __repr__(self):
