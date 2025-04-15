@@ -1,0 +1,71 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches:
+      - main  # Change this to your main branch name if different
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Push to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+        run: |
+          # Ensure token is available
+          if [ -z "$HF_TOKEN" ]; then
+            echo "Error: HF_TOKEN is not set in repository secrets"
+            exit 1
+          fi
+          
+          # Ensure username and space name are available
+          if [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE_NAME" ]; then
+            echo "Error: HF_USERNAME or HF_SPACE_NAME is not set in repository secrets"
+            exit 1
+          fi
+          
+          # Clone the target Hugging Face space
+          git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME huggingface-repo
+          
+          # Copy required files to the Hugging Face repo
+          mkdir -p huggingface-repo/assets
+          mkdir -p huggingface-repo/components
+          mkdir -p huggingface-repo/src
+          
+          # Copy the main application files
+          cp hf_app.py huggingface-repo/
+          cp hf_database.py huggingface-repo/
+          cp huggingface-space.yml huggingface-repo/.
+          cp requirements_hf.txt huggingface-repo/requirements.txt
+          
+          # Copy assets
+          cp -r assets/* huggingface-repo/assets/
+          
+          # Copy components
+          cp -r components/* huggingface-repo/components/
+          
+          # Copy src files needed for HF mode
+          cp -r src/models huggingface-repo/src/
+          cp -r src/database_init.py huggingface-repo/src/
+          cp -r src/streamlit_database.py huggingface-repo/src/
+          cp -r src/streamlit_subscription_services.py huggingface-repo/src/
+          
+          # Navigate to the HF repo directory
+          cd huggingface-repo
+          
+          # Add, commit, and push changes
+          git add -A
+          git commit -m "Automated deployment from GitHub Actions"
+          git push

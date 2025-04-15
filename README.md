@@ -54,6 +54,27 @@ JWT_SECRET_KEY=your_secret_key
 streamlit run app.py
 ```
 
+### Deployment to Hugging Face Spaces
+
+This project is configured for automatic deployment to Hugging Face Spaces using GitHub Actions.
+
+#### Setup Instructions:
+
+1. Create a new Hugging Face Space:
+   - Go to [Hugging Face Spaces](https://huggingface.co/spaces)
+   - Click "Create Space"
+   - Select "Streamlit" as the SDK
+   - Fill in the space name and other details
+
+2. Add the following secrets to your GitHub repository:
+   - `HF_TOKEN`: Your Hugging Face API token (from [Hugging Face settings](https://huggingface.co/settings/tokens))
+   - `HF_USERNAME`: Your Hugging Face username
+   - `HF_SPACE_NAME`: The name of your Hugging Face Space
+
+3. Push to your GitHub repository's main branch, and the GitHub Actions workflow will automatically deploy to your Hugging Face Space.
+
+The deployment process copies the necessary files (with Hugging Face-specific configurations) to your Space, ensuring the application runs in demo mode on Hugging Face.
+
 ## API Documentation
 
 The API provides endpoints for:
