@@ -10,8 +10,14 @@ fi
 
 echo "Testing your Hugging Face token..."
 
-# Test if we can authenticate 
-AUTH_RESPONSE=$(curl -s -H "Authorization: Bearer $HF_TOKEN" https://huggingface.co/api/whoami)
+# Check token format (only showing first few characters for security)
+TOKEN_LENGTH=${#HF_TOKEN}
+echo "Token length: $TOKEN_LENGTH characters"
+echo "Token starts with: ${HF_TOKEN:0:4}..."
+
+# Test if we can authenticate with verbose output
+echo "Sending authentication request to Hugging Face API..."
+AUTH_RESPONSE=$(curl -v -s -H "Authorization: Bearer $HF_TOKEN" https://huggingface.co/api/whoami 2>&1)
 if echo "$AUTH_RESPONSE" | grep -q "user"; then
   echo "✅ Authentication successful!"
   USERNAME=$(echo "$AUTH_RESPONSE" | grep -o '"name":"[^"]*' | cut -d'"' -f4)
