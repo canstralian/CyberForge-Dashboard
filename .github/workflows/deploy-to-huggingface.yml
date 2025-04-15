@@ -21,8 +21,10 @@ jobs:
       - name: Push to Hugging Face Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USERNAME: ${{ secrets.HF_USERNAME }}
-          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+          # You can uncomment and modify these lines to use hardcoded values instead of secrets
+          # Just make sure to never commit your actual token to the repository
+          HF_USERNAME: ${{ secrets.HF_USERNAME || 'S-Dreamer' }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME || 'CyberForge' }}
         run: |
           # Ensure token is available
           if [ -z "$HF_TOKEN" ]; then
@@ -30,11 +32,8 @@ jobs:
             exit 1
           fi
           
-          # Ensure username and space name are available
-          if [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE_NAME" ]; then
-            echo "Error: HF_USERNAME or HF_SPACE_NAME is not set in repository secrets"
-            exit 1
-          fi
+          # Username and space name can come from secrets or be hardcoded above
+          echo "Deploying to Hugging Face Space: $HF_USERNAME/$HF_SPACE_NAME"
           
           # Clone the target Hugging Face space
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME huggingface-repo

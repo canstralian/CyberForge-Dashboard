@@ -49,7 +49,8 @@ This guide provides step-by-step instructions for deploying your CyberForge OSIN
 1. Go to [Hugging Face Spaces](https://huggingface.co/spaces)
 2. Click "Create Space"
 3. Fill in the details:
-   - Name: Choose a name (e.g., "cyberforge-dashboard")
+   - Owner: "S-Dreamer"
+   - Name: "CyberForge"
    - SDK: Select "Streamlit"
    - License: Choose "MIT" or another license
    - Visibility: Public or private
@@ -64,9 +65,9 @@ This guide provides step-by-step instructions for deploying your CyberForge OSIN
    - Name: `HF_TOKEN`
      Value: Your Hugging Face API token (from [Hugging Face settings](https://huggingface.co/settings/tokens))
    - Name: `HF_USERNAME`
-     Value: Your Hugging Face username
+     Value: `S-Dreamer` (your Hugging Face username)
    - Name: `HF_SPACE_NAME`
-     Value: The name of your Hugging Face Space
+     Value: `CyberForge` (your Hugging Face Space name)
 
 ## 5. Trigger GitHub Actions Workflow
 
@@ -81,7 +82,7 @@ To manually trigger it:
 
 ## 6. Verify Deployment
 
-1. Go to your Hugging Face Space at `https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME`
+1. Go to your Hugging Face Space at `https://huggingface.co/spaces/S-Dreamer/CyberForge`
 2. The deployment might take a few minutes to complete
 3. Once completed, you should see the CyberForge OSINT Platform running in demo mode
 
