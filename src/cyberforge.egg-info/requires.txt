@@ -16,3 +16,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 bcrypt>=4.3.0
 email-validator>=2.2.0
+stripe>=12.0.0
