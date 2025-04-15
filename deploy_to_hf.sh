@@ -48,7 +48,7 @@ mkdir -p $TEMP_DIR/components
 mkdir -p $TEMP_DIR/src
 
 # Copy main files
-cp hf_app.py $TEMP_DIR/
+cp hf_app.py $TEMP_DIR/app.py  # Copy hf_app.py as app.py for Hugging Face
 cp hf_database.py $TEMP_DIR/
 cp huggingface-space.yml $TEMP_DIR/
 cp requirements_hf.txt $TEMP_DIR/requirements.txt
