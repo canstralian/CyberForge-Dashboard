@@ -19,10 +19,27 @@ echo "Deploying to Hugging Face Space: $HF_USERNAME/$HF_SPACE_NAME"
 TEMP_DIR=$(mktemp -d)
 echo "Using temporary directory: $TEMP_DIR"
 
-# Clone the Hugging Face space repository
-git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME $TEMP_DIR
+# Set up Git credentials helper to use the token
+git config --global credential.helper store
+echo "https://$HF_USERNAME:$HF_TOKEN@huggingface.co" > ~/.git-credentials
+chmod 600 ~/.git-credentials
+
+# Test authentication first
+echo "Testing authentication with Hugging Face..."
+curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $HF_TOKEN" https://huggingface.co/api/whoami | grep 200 > /dev/null
 if [ $? -ne 0 ]; then
-  echo "Failed to clone repository. Check your token and space name."
+  echo "❌ Authentication failed. Please check your HF_TOKEN."
+  echo "Make sure the token has write access to Spaces."
+  exit 1
+else
+  echo "✅ Authentication successful!"
+fi
+
+# Clone the Hugging Face space repository
+echo "Cloning Hugging Face Space repository..."
+git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME $TEMP_DIR
+if [ $? -ne 0 ]; then
+  echo "Failed to clone repository. Check your space name and permissions."
   exit 1
 fi
 
@@ -78,3 +95,9 @@ fi
 cd - > /dev/null
 echo "Cleaning up temporary files..."
 rm -rf $TEMP_DIR
+
+# Remove credentials
+if [ -f ~/.git-credentials ]; then
+  rm ~/.git-credentials
+fi
+git config --global --unset credential.helper
