@@ -52,6 +52,7 @@ cp hf_app.py $TEMP_DIR/app.py  # Copy hf_app.py as app.py for Hugging Face
 cp hf_database.py $TEMP_DIR/
 cp huggingface-space.yml $TEMP_DIR/
 cp requirements_hf.txt $TEMP_DIR/requirements.txt
+cp security_hf.py $TEMP_DIR/  # Copy simplified security module
 
 # Copy assets
 if [ -d "assets" ]; then
@@ -64,16 +65,40 @@ if [ -d "components" ]; then
 fi
 
 # Copy src files needed for HF mode
+# Create necessary directories
+mkdir -p $TEMP_DIR/src/models
+mkdir -p $TEMP_DIR/src/api
+mkdir -p $TEMP_DIR/src/api/services
+
+# Copy model files
 if [ -d "src/models" ]; then
-  mkdir -p $TEMP_DIR/src/models
   cp -r src/models/* $TEMP_DIR/src/models/ 2>/dev/null || :
 fi
 
-for file in "database_init.py" "streamlit_database.py" "streamlit_subscription_services.py"; do
+# Copy API files
+if [ -d "src/api" ]; then
+  # Copy security.py and other essential API files
+  for file in $(find src/api -name "*.py" | grep -v "__pycache__"); do
+    # Create target directory
+    target_dir=$(dirname "${file}" | sed "s|^src|$TEMP_DIR/src|")
+    mkdir -p "$target_dir"
+    # Copy file
+    cp "$file" "$target_dir/" 2>/dev/null || :
+  done
+fi
+
+# Copy specific src files
+for file in "database_init.py" "streamlit_database.py" "streamlit_subscription_services.py" "__init__.py"; do
   if [ -f "src/$file" ]; then
     cp "src/$file" "$TEMP_DIR/src/"
   fi
 done
+
+# Ensure __init__.py files exist in all directories for proper imports
+touch "$TEMP_DIR/src/__init__.py"
+touch "$TEMP_DIR/src/api/__init__.py"
+touch "$TEMP_DIR/src/api/services/__init__.py"
+touch "$TEMP_DIR/src/models/__init__.py"
 
 # Configure git and commit changes
 cd $TEMP_DIR

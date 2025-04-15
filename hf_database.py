@@ -10,7 +10,12 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from src.models.base import Base
 from src.models.user import User
-from src.api.security import get_password_hash
+try:
+    # Try to import from src.api.security first (for local development)
+    from src.api.security import get_password_hash
+except ImportError:
+    # Fall back to simplified security module for HF (copied during deployment)
+    from security_hf import get_password_hash
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
