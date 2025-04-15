@@ -64,7 +64,7 @@ class SearchResult(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     search_id = Column(Integer, ForeignKey("search_history.id"), nullable=False)
-    content_id = Column(Integer, ForeignKey("dark_web_content.id"), nullable=True)
+    content_id = Column(Integer, ForeignKey("dark_web_contents.id"), nullable=True)
     url = Column(String(1024), nullable=True)
     title = Column(String(255), nullable=True)
     snippet = Column(Text, nullable=True)

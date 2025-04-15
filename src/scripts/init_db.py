@@ -24,6 +24,7 @@ from src.models.indicator import Indicator, IndicatorType
 from src.models.dark_web_content import DarkWebContent, DarkWebMention, ContentType, ContentStatus
 from src.models.alert import Alert, AlertStatus, AlertCategory
 from src.models.report import Report, ReportType, ReportStatus
+from src.models.search_history import SearchHistory, SearchResult, SavedSearch, TrendTopic
 
 # Configure logging
 logging.basicConfig(
