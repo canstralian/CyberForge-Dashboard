@@ -37,10 +37,16 @@ fi
 
 # Clone the Hugging Face space repository
 echo "Cloning Hugging Face Space repository..."
-git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME $TEMP_DIR
+git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME $TEMP_DIR
 if [ $? -ne 0 ]; then
   echo "Failed to clone repository. Check your space name and permissions."
-  exit 1
+  echo "Trying alternative clone method..."
+  # Try using https URL with token in credentials
+  git clone "https://api-token:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME" $TEMP_DIR
+  if [ $? -ne 0 ]; then
+    echo "All clone attempts failed. Please verify your token has appropriate permissions."
+    exit 1
+  fi
 fi
 
 # Create directory structure
@@ -83,12 +89,19 @@ git config --global user.name "Replit Deployment"
 git add -A
 git commit -m "Deployment from Replit"
 
-# Push to Hugging Face
-if git push; then
+# Push to Hugging Face with credentials in URL
+if git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME; then
   echo -e "\n✅ Successfully deployed to Hugging Face Spaces!"
   echo "View your space at: https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME"
 else
-  echo -e "\n❌ Failed to push to Hugging Face Spaces."
+  echo "Trying alternative push method..."
+  if git push https://api-token:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME; then
+    echo -e "\n✅ Successfully deployed to Hugging Face Spaces!"
+    echo "View your space at: https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME"
+  else
+    echo -e "\n❌ Failed to push to Hugging Face Spaces."
+    echo "Please check your token permissions and make sure you have write access to the space."
+  fi
 fi
 
 # Cleanup
