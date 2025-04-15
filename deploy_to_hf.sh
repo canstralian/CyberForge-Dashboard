@@ -24,16 +24,9 @@ git config --global credential.helper store
 echo "https://$HF_USERNAME:$HF_TOKEN@huggingface.co" > ~/.git-credentials
 chmod 600 ~/.git-credentials
 
-# Test authentication first
-echo "Testing authentication with Hugging Face..."
-curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $HF_TOKEN" https://huggingface.co/api/whoami | grep 200 > /dev/null
-if [ $? -ne 0 ]; then
-  echo "❌ Authentication failed. Please check your HF_TOKEN."
-  echo "Make sure the token has write access to Spaces."
-  exit 1
-else
-  echo "✅ Authentication successful!"
-fi
+# Skip initial authentication test and proceed directly to git operations
+echo "Skipping initial authentication test and proceeding with git operations..."
+echo "This will use your token directly with git commands."
 
 # Clone the Hugging Face space repository
 echo "Cloning Hugging Face Space repository..."
