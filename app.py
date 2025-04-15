@@ -34,6 +34,7 @@ from components.reports import render_reports
 from components.live_feed import render_live_feed, render_content_analysis
 from components.web_scraper import render_web_scraper_ui
 from components.search_trends import render_search_trends
+from components.subscriptions import render_subscriptions
 
 # Page configuration
 st.set_page_config(
@@ -240,7 +241,7 @@ with st.sidebar:
     st.subheader("Navigation")
     selected_page = st.radio(
         "Select a page",
-        ["Dashboard", "Live Feed", "Threat Detection", "Monitoring", "Alerts", "Reports", "Content Analysis", "Web Scraper", "Search Trends"],
+        ["Dashboard", "Live Feed", "Threat Detection", "Monitoring", "Alerts", "Reports", "Content Analysis", "Web Scraper", "Search Trends", "Subscriptions"],
         label_visibility="collapsed"
     )
     
@@ -355,6 +356,8 @@ elif selected_page == "Web Scraper":
     render_web_scraper_ui()
 elif selected_page == "Search Trends":
     render_search_trends()
+elif selected_page == "Subscriptions":
+    render_subscriptions()
 
 # Add a floating action button for quick actions
 st.markdown("""
