@@ -21,6 +21,16 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 # Create async engine
 if DATABASE_URL.startswith("postgresql://"):
+    # Remove sslmode parameter if present which causes issues with asyncpg
+    if "?" in DATABASE_URL:
+        base_url, params = DATABASE_URL.split("?", 1)
+        param_list = params.split("&")
+        filtered_params = [p for p in param_list if not p.startswith("sslmode=")]
+        if filtered_params:
+            DATABASE_URL = f"{base_url}?{'&'.join(filtered_params)}"
+        else:
+            DATABASE_URL = base_url
+    
     # Convert to async format
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
 
