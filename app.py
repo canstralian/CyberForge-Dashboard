@@ -39,7 +39,8 @@ from components.reports import render_reports
 from components.live_feed import render_live_feed, render_content_analysis
 from components.web_scraper import render_web_scraper_ui
 from components.search_trends import render_search_trends
-from components.subscriptions import render_subscriptions
+# Commented out until the subscription component is fixed
+# from components.subscriptions import render_subscriptions
 from components.deployment_recommendations import render_deployment_recommendations
 from components.security_wizard import render_security_wizard
 
@@ -449,7 +450,9 @@ elif selected_page == "Web Scraper":
 elif selected_page == "Search Trends":
     render_search_trends()
 elif selected_page == "Subscriptions":
-    render_subscriptions()
+    # Temporarily disabled until fixed
+    st.title("Subscription Management")
+    st.info("Subscription management is currently being updated. Please check back later.")
 elif selected_page == "Deployment Recommendations":
     render_deployment_recommendations()
 elif selected_page == "Security Wizard":
