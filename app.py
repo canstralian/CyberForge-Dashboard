@@ -155,6 +155,46 @@ st.markdown("""
         background-color: #2C3E5050;
     }
     
+    /* Enhanced navigation styling */
+    section[data-testid="stSidebar"] [data-testid="stSelectbox"] {
+        background-color: #2C3E5020;
+        border-radius: 6px;
+        padding: 5px;
+        margin-bottom: 10px;
+    }
+    
+    section[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div {
+        background-color: #3498DB20;
+        border: 1px solid #3498DB50;
+        border-radius: 4px;
+    }
+    
+    section[data-testid="stSidebar"] [data-testid="stRadio"] {
+        background-color: #2C3E5010;
+        border-radius: 6px;
+        padding: 8px;
+        border-left: 3px solid #3498DB;
+    }
+    
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:has(> [data-testid="stRadio"]) {
+        padding-top: 5px;
+        padding-bottom: 10px;
+    }
+    
+    /* Navigation category colors */
+    .nav-overview {
+        border-left-color: #3498DB !important; /* Blue */
+    }
+    .nav-intelligence {
+        border-left-color: #2ECC71 !important; /* Green */
+    }
+    .nav-security {
+        border-left-color: #E74C3C !important; /* Red */
+    }
+    .nav-operations {
+        border-left-color: #9B59B6 !important; /* Purple */
+    }
+    
     /* Custom loading animation */
     @keyframes pulse {
         0% { opacity: 0.6; }
@@ -235,13 +275,60 @@ with st.sidebar:
     st.markdown("<h4 style='text-align: center; margin-top: -15px; opacity: 0.8;'>Dark Web OSINT Platform</h4>", unsafe_allow_html=True)
     st.markdown("---")
     
-    # Navigation with improved interactive elements
+    # Navigation with improved interactive elements and category-based organization
     st.subheader("Navigation")
-    selected_page = st.radio(
-        "Select a page",
-        ["Dashboard", "Live Feed", "Threat Detection", "Monitoring", "Alerts", "Reports", "Content Analysis", "Web Scraper", "Search Trends", "Subscriptions", "Deployment Recommendations"],
-        label_visibility="collapsed"
+    
+    # Organize navigation items into categories
+    nav_categories = {
+        "Overview": ["Dashboard"],
+        "Intelligence": ["Live Feed", "Content Analysis", "Web Scraper", "Search Trends"],
+        "Security": ["Threat Detection", "Monitoring", "Alerts", "Reports"],
+        "Operations": ["Deployment Recommendations", "Subscriptions"]
+    }
+    
+    # Store the selected category in session state
+    if 'nav_category' not in st.session_state:
+        st.session_state.nav_category = "Overview"
+    
+    # Category selection
+    selected_category = st.selectbox(
+        "Category",
+        list(nav_categories.keys()),
+        index=list(nav_categories.keys()).index(st.session_state.nav_category),
+        key="category_selector"
     )
+    
+    # Update session state when category changes
+    if selected_category != st.session_state.nav_category:
+        st.session_state.nav_category = selected_category
+    
+    # Page selection within the category with category-specific styling
+    radio_container = st.container()
+    with radio_container:
+        selected_page = st.radio(
+            f"{selected_category} Pages",
+            nav_categories[selected_category],
+            key=f"radio_{selected_category}"
+        )
+    
+    # Apply category-specific styling using custom CSS
+    # Define category colors
+    category_colors = {
+        "Overview": "#3498DB",  # Blue
+        "Intelligence": "#2ECC71",  # Green
+        "Security": "#E74C3C",  # Red
+        "Operations": "#9B59B6"  # Purple
+    }
+    
+    # Apply styling with the direct color
+    category_color = category_colors.get(selected_category, "#3498DB")
+    st.markdown(f"""
+    <style>
+        section[data-testid="stSidebar"] div[key="radio_{selected_category}"] [data-testid="stRadio"] {{
+            border-left: 3px solid {category_color} !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
