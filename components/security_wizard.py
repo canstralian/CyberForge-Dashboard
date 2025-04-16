@@ -350,40 +350,25 @@ def save_security_configuration(user_id, config, apply_now=False):
             timing = "SAFE_TO_DEPLOY"
             timing_justification = "No significant threats detected."
         
-        # Create service and session for database operations
+        # Create recommendation using the deployment_recommendations helper
         async def create_custom_recommendation():
-            async with get_db_session() as session:
-                service = DeploymentRecommendationService(session)
-                # Create the recommendation using the service
-                recommendation = await service.create_recommendation(
+            recommendation = await generate_threat_based_recommendation(
+                user_id=user_id,
+                look_back_days=7,
+                override_title=f"Security Configuration: {security_level_name}",
+                override_description=f"Automated security configuration based on threat analysis"
+            )
+            
+            # If apply_now is True, record it as an applied deployment
+            if apply_now and recommendation:
+                await record_deployment(
                     user_id=user_id,
-                    title=f"Security Configuration: {security_level_name}",
-                    description=f"Automated security configuration based on threat analysis",
-                    security_level=security_level,
-                    timing_recommendation=timing,
-                    timing_justification=timing_justification,
-                    recommended_window_start=datetime.now() + timedelta(days=1) if timing != "SAFE_TO_DEPLOY" else datetime.now(),
-                    recommended_window_end=datetime.now() + timedelta(days=7),
-                    threat_assessment_summary=threat_summary,
-                    security_settings=security_settings,
-                    high_risk_threats_count=high_risk_threats,
-                    medium_risk_threats_count=medium_risk_threats,
-                    low_risk_threats_count=low_risk_threats,
-                    expires_at=datetime.now() + timedelta(days=30)  # Valid for 30 days
+                    recommendation_id=recommendation.id,
+                    title=f"Applied {security_level_name}",
+                    was_successful=True
                 )
-                
-                # If apply_now is True, record it as an applied deployment
-                if apply_now:
-                    await service.record_deployment(
-                        user_id=user_id,
-                        recommendation_id=recommendation.id,
-                        title=f"Applied {security_level_name}",
-                        description="Applied security configuration from Security Wizard",
-                        security_level=security_level,
-                        was_successful=True
-                    )
-                
-                return recommendation
+            
+            return recommendation
         
         # Run the async function
         result = run_async(create_custom_recommendation())
