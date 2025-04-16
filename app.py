@@ -260,6 +260,12 @@ if len(st.session_state.notifications) == 0:
         "danger",
         "🚨"
     )
+    add_notification(
+        "New Feature: Security Wizard Available",
+        "Try our one-click security configuration wizard in the Security category!",
+        "info",
+        "✨"
+    )
 
 # Sidebar with enhanced UI
 with st.sidebar:

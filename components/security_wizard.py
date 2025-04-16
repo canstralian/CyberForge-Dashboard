@@ -285,9 +285,45 @@ def save_security_configuration(user_id, config, apply_now=False):
         bool: Success status
     """
     try:
-        # Create a deployment recommendation
-        security_level = config.get("name", "Standard Security")
-        security_settings = json.dumps(config)
+        # Get security level from config
+        security_level_name = config.get("name", "Standard Security")
+        security_level_key = security_level_name.split()[0].lower()
+        
+        # Map to SecurityConfigLevel enum
+        security_level_map = {
+            "minimal": "STANDARD",  # Map minimal to standard as the lowest level
+            "standard": "STANDARD",
+            "enhanced": "ENHANCED",
+            "maximum": "STRICT"
+        }
+        security_level = security_level_map.get(security_level_key, "STANDARD")
+        
+        # Prepare security settings
+        security_settings = {
+            "network_security": {
+                "enable_firewall": True,
+                "enable_ids_ips": security_level_key in ["enhanced", "maximum"],
+                "restrict_ports": True,
+                "enable_ddos_protection": security_level_key in ["enhanced", "maximum"]
+            },
+            "authentication": {
+                "require_mfa": security_level_key in ["enhanced", "maximum"],
+                "session_timeout": 30 if security_level_key in ["enhanced", "maximum"] else 60,
+                "password_complexity": "high" if security_level_key in ["enhanced", "maximum"] else "medium"
+            },
+            "encryption": {
+                "encrypt_data_at_rest": True,
+                "encrypt_data_in_transit": True,
+                "key_rotation": security_level_key in ["enhanced", "maximum"],
+                "use_hsts": security_level_key in ["enhanced", "maximum"],
+            },
+            "monitoring": {
+                "enable_logging": True,
+                "log_retention_days": 90 if security_level_key in ["enhanced", "maximum"] else 30,
+                "enable_alerts": True,
+                "real_time_monitoring": security_level_key in ["enhanced", "maximum"]
+            }
+        }
         
         # Calculate threat counts
         active_threats = config.get("active_threats", {})
@@ -299,29 +335,58 @@ def save_security_configuration(user_id, config, apply_now=False):
         threat_summary = "Identified vulnerabilities: "
         threat_summary += ", ".join([VULNERABILITY_TYPES[t]["name"] for t in active_threats])
         
-        # Create deployment recommendation
-        result = run_async(generate_threat_based_recommendation(
-            user_id=user_id,
-            title=f"Security Configuration: {security_level}",
-            description=f"Automated security configuration based on threat analysis",
-            security_level=security_level.split()[0].lower(),  # minimal, standard, enhanced, maximum
-            security_settings=security_settings,
-            threat_assessment_summary=threat_summary,
-            high_risk_threats_count=high_risk_threats,
-            medium_risk_threats_count=medium_risk_threats,
-            low_risk_threats_count=low_risk_threats
-        ))
+        # Get timing recommendation based on risk score
+        risk_score = config.get("risk_score", 50)
+        if risk_score > 70:
+            timing = "HIGH_RISK"
+            timing_justification = "High concentration of critical and high severity threats detected."
+        elif risk_score > 40:
+            timing = "DELAY_RECOMMENDED"
+            timing_justification = "Multiple high and medium severity threats detected."
+        elif risk_score > 20:
+            timing = "CAUTION"
+            timing_justification = "Some medium severity threats detected."
+        else:
+            timing = "SAFE_TO_DEPLOY"
+            timing_justification = "No significant threats detected."
         
-        recommendation_id = getattr(result, 'id', None)
+        # Create service and session for database operations
+        async def create_custom_recommendation():
+            async with get_db_session() as session:
+                service = DeploymentRecommendationService(session)
+                # Create the recommendation using the service
+                recommendation = await service.create_recommendation(
+                    user_id=user_id,
+                    title=f"Security Configuration: {security_level_name}",
+                    description=f"Automated security configuration based on threat analysis",
+                    security_level=security_level,
+                    timing_recommendation=timing,
+                    timing_justification=timing_justification,
+                    recommended_window_start=datetime.now() + timedelta(days=1) if timing != "SAFE_TO_DEPLOY" else datetime.now(),
+                    recommended_window_end=datetime.now() + timedelta(days=7),
+                    threat_assessment_summary=threat_summary,
+                    security_settings=security_settings,
+                    high_risk_threats_count=high_risk_threats,
+                    medium_risk_threats_count=medium_risk_threats,
+                    low_risk_threats_count=low_risk_threats,
+                    expires_at=datetime.now() + timedelta(days=30)  # Valid for 30 days
+                )
+                
+                # If apply_now is True, record it as an applied deployment
+                if apply_now:
+                    await service.record_deployment(
+                        user_id=user_id,
+                        recommendation_id=recommendation.id,
+                        title=f"Applied {security_level_name}",
+                        description="Applied security configuration from Security Wizard",
+                        security_level=security_level,
+                        was_successful=True
+                    )
+                
+                return recommendation
         
-        # If apply_now is True, record it as an applied deployment
-        if apply_now and recommendation_id:
-            run_async(record_deployment(
-                user_id=user_id,
-                recommendation_id=recommendation_id,
-                title=f"Applied {security_level}",
-                was_successful=True
-            ))
+        # Run the async function
+        result = run_async(create_custom_recommendation())
         
         return True
     except Exception as e:
