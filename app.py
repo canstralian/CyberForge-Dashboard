@@ -41,6 +41,7 @@ from components.web_scraper import render_web_scraper_ui
 from components.search_trends import render_search_trends
 from components.subscriptions import render_subscriptions
 from components.deployment_recommendations import render_deployment_recommendations
+from components.security_wizard import render_security_wizard
 
 # Custom CSS to match design requirements and improve UI/UX
 st.markdown("""
@@ -282,7 +283,7 @@ with st.sidebar:
     nav_categories = {
         "Overview": ["Dashboard"],
         "Intelligence": ["Live Feed", "Content Analysis", "Web Scraper", "Search Trends"],
-        "Security": ["Threat Detection", "Monitoring", "Alerts", "Reports"],
+        "Security": ["Threat Detection", "Monitoring", "Alerts", "Reports", "Security Wizard"],
         "Operations": ["Deployment Recommendations", "Subscriptions"]
     }
     
@@ -445,6 +446,8 @@ elif selected_page == "Subscriptions":
     render_subscriptions()
 elif selected_page == "Deployment Recommendations":
     render_deployment_recommendations()
+elif selected_page == "Security Wizard":
+    render_security_wizard()
 
 # Add a floating action button for quick actions
 st.markdown("""
