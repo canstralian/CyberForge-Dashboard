@@ -1,0 +1,43 @@
+# .github/dependabot.yml
+# Dependabot configuration for version updates
+# Documentation: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/enable-dependabot-version-updates
+
+version: 2
+
+updates:
+  # Python dependencies via pip (requirements.txt, pipfile, etc.)
+  - package-ecosystem: "pip"
+    directory: "/"  # Root of the repository or adjust if requirements are in a subdir
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "03:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "example-internal-lib"
+        versions: [">=0.0.0"]
+    versioning-strategy: "increase"
+
+  # Docker base image version updates
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    versioning-strategy: "increase"
+
+  # GitHub Actions dependency updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "02:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    versioning-strategy: "increase"
+
